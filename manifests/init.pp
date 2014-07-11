@@ -6,6 +6,7 @@ class ntp (
   $config_file_owner   = 'root',
   $config_file_group   = 'root',
   $config_file_mode    = '0644',
+  $package_manage      = true,
   $package_latest      = false,
   $package_name        = 'USE_DEFAULTS',
   $package_noop        = 'USE_DEFAULTS',
@@ -34,6 +35,14 @@ class ntp (
   $statsdir            = '/var/log/ntpstats/',
   $logfile             = 'UNSET',
 ) {
+
+  # validate type and convert string to boolean if necessary
+  $package_manage_type = type($package_manage)
+  if $package_manage_type == 'string' {
+    $my_package_manage = str2bool($package_manage)
+  } else {
+    $my_package_manage = $package_manage
+  }
 
   # validate type and convert string to boolean if necessary
   $package_latest_type = type($package_latest)
@@ -250,11 +259,13 @@ class ntp (
     }
   }
 
-  package { $package_name_real:
-    ensure    => $package_ensure,
-    noop      => $package_noop_real,
-    source    => $package_source_real,
-    adminfile => $package_adminfile_real,
+  if $my_package_manage == true {
+    package { $package_name_real:
+      ensure    => $package_ensure,
+      noop      => $package_noop_real,
+      source    => $package_source_real,
+      adminfile => $package_adminfile_real,
+    }
   }
 
   file { 'ntp_conf':
